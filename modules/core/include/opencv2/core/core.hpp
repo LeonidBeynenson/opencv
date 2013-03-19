@@ -299,7 +299,16 @@ CV_EXPORTS_W int getNumberOfCPUs();
   \param bufSize buffer size in bytes
   \return the allocated memory buffer.
 */
+#if defined(ANDROID) && ANDROID
+#define DEBUG_MEMORY_CONSUMPTION 1
+#endif
+
 CV_EXPORTS void* fastMalloc(size_t bufSize);
+#ifdef DEBUG_MEMORY_CONSUMPTION
+int& getTotalAllocatedSize();
+int& getMaxTotalAllocatedSize();
+void* fastMalloc(size_t bufSize, int bufSizeToStore);
+#endif
 
 /*!
   Frees the memory allocated with cv::fastMalloc

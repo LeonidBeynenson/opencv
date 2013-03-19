@@ -41,6 +41,9 @@
 //M*/
 
 #include "precomp.hpp"
+#ifndef ANDROID
+#include <iostream> // for debugging only
+#endif
 
 #define CV_USE_SYSTEM_MALLOC 1
 
@@ -59,6 +62,7 @@ static void* OutOfMemoryError(size_t size)
 void deleteThreadAllocData() {}
 #endif
 
+#ifndef DEBUG_MEMORY_CONSUMPTION
 void* fastMalloc( size_t size )
 {
     uchar* udata = (uchar*)malloc(size + sizeof(void*) + CV_MALLOC_ALIGN);
@@ -79,6 +83,78 @@ void fastFree(void* ptr)
         free(udata);
     }
 }
+#else //i.e. if defined DEBUG_MEMORY_CONSUMPTION
+int& getTotalAllocatedSize()
+{
+    static int _total_allocated_size = 0;
+    return _total_allocated_size;
+}
+int& getMaxTotalAllocatedSize()
+{
+    static int _max_total_allocated_size = 0;
+    return _max_total_allocated_size;
+}
+
+inline void storeMemoryAllocation(int allocationSize)
+{
+    CV_Assert(allocationSize >= 0);
+    int& total = getTotalAllocatedSize();
+    CV_XADD(&total, allocationSize);
+
+    int new_total = getTotalAllocatedSize();
+    int cur_max = getMaxTotalAllocatedSize();
+    if (cur_max < new_total) {
+        getMaxTotalAllocatedSize() = new_total;// is not thread-safe
+    }
+#if 0 && !defined(ANDROID) 
+    ::std::cout << "storeMemoryAllocation: allocated = " << allocationSize << ", now total=" << getTotalAllocatedSize() << ", max=" << getMaxTotalAllocatedSize() << std::endl; 
+    ::std::cout.flush();
+#endif
+}
+inline void storeMemoryDeallocation(int allocationSize)
+{
+    CV_Assert(allocationSize >= 0);
+    int& total = getTotalAllocatedSize();
+    CV_XADD(&total, -allocationSize);
+
+#if 0 && !defined(ANDROID) 
+    ::std::cout << "storeMemoryDeallocation: freed " << allocationSize << ", now total=" << getTotalAllocatedSize() << ", max=" << getMaxTotalAllocatedSize() << std::endl; 
+    ::std::cout.flush();
+#endif
+
+}
+
+void* fastMalloc( size_t size, int size_to_show )
+{
+    uchar* udata = (uchar*)malloc(size + sizeof(void*) + CV_MALLOC_ALIGN + sizeof(int));
+    if(!udata)
+        return OutOfMemoryError(size);
+    uchar* udata_shifted = udata + sizeof(void*) + sizeof(int);
+    uchar** adata = alignPtr( (uchar**)udata_shifted, CV_MALLOC_ALIGN);
+    adata[-1] = udata;
+    *(int*)udata = size_to_show + sizeof(void*) + CV_MALLOC_ALIGN + sizeof(int);
+    storeMemoryAllocation(size_to_show);
+    return adata;
+}
+void* fastMalloc( size_t size )
+{
+    return fastMalloc(size, (int)size);
+}
+
+void fastFree(void* ptr)
+{
+    if(ptr)
+    {
+        uchar* udata = ((uchar**)ptr)[-1];
+        CV_DbgAssert(udata < (uchar*)ptr &&
+               ((uchar*)ptr - udata) <= (ptrdiff_t)(sizeof(void*)+CV_MALLOC_ALIGN + sizeof(int)));
+        int size_to_show = *(int*)udata;
+        storeMemoryDeallocation(size_to_show);
+        free(udata);
+    }
+}
+
+#endif
 
 #else //CV_USE_SYSTEM_MALLOC
 
