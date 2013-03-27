@@ -49,6 +49,34 @@
 *                           [scaled] Identity matrix initialization                      *
 \****************************************************************************************/
 
+////////////////// BEGIN TMP DEBUG CHANGES /////////////////
+#if 0 && defined(ANDROID)
+std::string getNameOfCVType(int type)
+{
+    switch(type)
+    {
+        case CV_8UC1: return "CV_8UC1";
+        case CV_8UC2: return "CV_8UC2";
+        case CV_8UC3: return "CV_8UC3";
+        case CV_8UC4: return "CV_8UC4";
+        case CV_16SC1: return "CV_16SC1";
+        case CV_16SC2: return "CV_16SC2";
+        case CV_16SC3: return "CV_16SC3";
+        case CV_16SC4: return "CV_16SC4";
+        case CV_32SC1: return "CV_32SC1";
+        case CV_32SC2: return "CV_32SC2";
+        case CV_32SC3: return "CV_32SC3";
+        case CV_32SC4: return "CV_32SC4";
+        case CV_32FC1: return "CV_32FC1";
+        case CV_32FC2: return "CV_32FC2";
+        case CV_32FC3: return "CV_32FC3";
+        case CV_32FC4: return "CV_32FC4";
+    }
+    return "UNKNOWN";
+}
+#endif
+////////////////// END TMP DEBUG CHANGES /////////////////
+
 namespace cv {
 
 void swap( Mat& a, Mat& b )
@@ -183,6 +211,25 @@ static void finalizeHdr(Mat& m)
 
 void Mat::create(int d, const int* _sizes, int _type)
 {
+#if 0 && defined(ANDROID)
+    if (d == 1)
+    {
+        CV_Assert(_sizes[0] >= 0);
+        if (CV_ELEM_SIZE(_type) * _sizes[0] >= 1000)
+            LOG_DEBUG_MSG("Mat::create: d = " << d << ", sizes = (" << _sizes[0] << "), type = " << _type << " = " << getNameOfCVType(_type) << ", SIZE = " << CV_ELEM_SIZE(_type) * _sizes[0]);
+    }
+    else if (d == 2)
+    {
+        CV_Assert(_sizes[0] >= 0);
+        CV_Assert(_sizes[1] >= 0);
+        if (CV_ELEM_SIZE(_type) * _sizes[0] * _sizes[1] >= 1000)
+            LOG_DEBUG_MSG("Mat::create: d = " << d << ", sizes = (" << _sizes[1] << ", " << _sizes[0] << "), type = " << _type << " = " << getNameOfCVType(_type) << ", SIZE = " << CV_ELEM_SIZE(_type) * _sizes[0] * _sizes[1]);
+    }
+    else
+    {
+        LOG_DEBUG_MSG("Mat::create: d = " << d << ", CANNOTPRINTSIZES,  type = " << _type << " = " << getNameOfCVType(_type));
+    }
+#endif
     int i;
     CV_Assert(0 <= d && d <= CV_MAX_DIM && _sizes);
     _type = CV_MAT_TYPE(_type);

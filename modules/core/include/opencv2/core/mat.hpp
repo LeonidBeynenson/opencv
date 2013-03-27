@@ -43,6 +43,24 @@
 #ifndef __OPENCV_CORE_MATRIX_OPERATIONS_HPP__
 #define __OPENCV_CORE_MATRIX_OPERATIONS_HPP__
 
+////////////////// BEGIN TMP DEBUG CHANGES /////////////////
+#if 0 && defined(ANDROID)
+  #include <string>
+  #include <iostream>
+  #include <sstream>
+  #include <android/log.h>
+#ifndef LOG_DEBUG_MSG
+  #define LOG_DEBUG_MSG(msg) \
+    do { \
+        std::stringstream _os; \
+        _os << msg; \
+       __android_log_print(ANDROID_LOG_DEBUG, "DEBUGMESG", "%s", _os.str().c_str()); \
+    } while(0);
+#endif
+std::string getNameOfCVType(int type);
+#endif
+////////////////// END TMP DEBUG CHANGES /////////////////
+
 #ifndef SKIP_INCLUDES
 #include <limits.h>
 #include <string.h>
@@ -364,7 +382,14 @@ inline void Mat::addref()
 inline void Mat::release()
 {
     if( refcount && CV_XADD(refcount, -1) == 1 )
+    {
+#if 0 && defined(ANDROID)
+        if (CV_ELEM_SIZE(type()) * size().width * size().height >=1000)
+            LOG_DEBUG_MSG("Mat::release: sizes = (" << size().width << "x" << size().height << "), type = " << type() << " = " << getNameOfCVType(type()) 
+                    << ", SIZE = " << CV_ELEM_SIZE(type()) * size().width * size().height);
+#endif
         deallocate();
+    }
     data = datastart = dataend = datalimit = 0;
     size.p[0] = 0;
     refcount = 0;

@@ -110,6 +110,10 @@ inline void storeMemoryAllocation(int allocationSize)
     ::std::cout << "storeMemoryAllocation: allocated = " << allocationSize << ", now total=" << getTotalAllocatedSize() << ", max=" << getMaxTotalAllocatedSize() << std::endl; 
     ::std::cout.flush();
 #endif
+#if 0 && defined(ANDROID)
+    if (allocationSize >= 1000)
+        LOG_DEBUG_MSG("storeMemoryAllocation: allocated = " << allocationSize << ", now total=" << getTotalAllocatedSize() << ", max=" << getMaxTotalAllocatedSize()); 
+#endif
 }
 inline void storeMemoryDeallocation(int allocationSize)
 {
@@ -120,6 +124,10 @@ inline void storeMemoryDeallocation(int allocationSize)
 #if 0 && !defined(ANDROID) 
     ::std::cout << "storeMemoryDeallocation: freed " << allocationSize << ", now total=" << getTotalAllocatedSize() << ", max=" << getMaxTotalAllocatedSize() << std::endl; 
     ::std::cout.flush();
+#endif
+#if 0 && defined(ANDROID) 
+    if (allocationSize >= 1000)
+        LOG_DEBUG_MSG("storeMemoryDeallocation: deallocated = " << allocationSize << ", now total=" << getTotalAllocatedSize() << ", max=" << getMaxTotalAllocatedSize()); 
 #endif
 
 }
