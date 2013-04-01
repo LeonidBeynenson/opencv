@@ -301,6 +301,7 @@ CV_EXPORTS_W int getNumberOfCPUs();
 */
 #if defined(ANDROID) && ANDROID
 #define DEBUG_MEMORY_CONSUMPTION 1
+#undef DEBUG_MEMORY_CONSUMPTION
 #endif
 
 CV_EXPORTS void* fastMalloc(size_t bufSize);

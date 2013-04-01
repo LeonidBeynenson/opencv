@@ -216,14 +216,16 @@ void Mat::create(int d, const int* _sizes, int _type)
     {
         CV_Assert(_sizes[0] >= 0);
         if (CV_ELEM_SIZE(_type) * _sizes[0] >= 1000)
-            LOG_DEBUG_MSG("Mat::create: d = " << d << ", sizes = (" << _sizes[0] << "), type = " << _type << " = " << getNameOfCVType(_type) << ", SIZE = " << CV_ELEM_SIZE(_type) * _sizes[0]);
+            LOG_DEBUG_MSG("Mat::create: d = " << d << ", sizes = (" << _sizes[0] << "), type = " << _type << " = " << getNameOfCVType(_type) 
+                    << ", SIZE = " << bytes_to_MB(CV_ELEM_SIZE(_type) * _sizes[0]) << " MB");
     }
     else if (d == 2)
     {
         CV_Assert(_sizes[0] >= 0);
         CV_Assert(_sizes[1] >= 0);
         if (CV_ELEM_SIZE(_type) * _sizes[0] * _sizes[1] >= 1000)
-            LOG_DEBUG_MSG("Mat::create: d = " << d << ", sizes = (" << _sizes[1] << ", " << _sizes[0] << "), type = " << _type << " = " << getNameOfCVType(_type) << ", SIZE = " << CV_ELEM_SIZE(_type) * _sizes[0] * _sizes[1]);
+            LOG_DEBUG_MSG("Mat::create: d = " << d << ", sizes = (" << _sizes[1] << ", " << _sizes[0] << "), type = " << _type << " = " << getNameOfCVType(_type) 
+                    << ", SIZE = " << bytes_to_MB(CV_ELEM_SIZE(_type) * _sizes[0] * _sizes[1]) << " MB");
     }
     else
     {

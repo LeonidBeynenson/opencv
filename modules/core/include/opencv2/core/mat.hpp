@@ -58,6 +58,10 @@
     } while(0);
 #endif
 std::string getNameOfCVType(int type);
+inline double bytes_to_MB(int bytenum)
+{
+    return ceil(bytenum/1024.0/10.24)/100.0;
+}
 #endif
 ////////////////// END TMP DEBUG CHANGES /////////////////
 
@@ -386,7 +390,7 @@ inline void Mat::release()
 #if 0 && defined(ANDROID)
         if (CV_ELEM_SIZE(type()) * size().width * size().height >=1000)
             LOG_DEBUG_MSG("Mat::release: sizes = (" << size().width << "x" << size().height << "), type = " << type() << " = " << getNameOfCVType(type()) 
-                    << ", SIZE = " << CV_ELEM_SIZE(type()) * size().width * size().height);
+                    << ", SIZE = " << bytes_to_MB(CV_ELEM_SIZE(type()) * size().width * size().height) << " MB");
 #endif
         deallocate();
     }
