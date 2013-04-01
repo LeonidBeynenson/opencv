@@ -389,7 +389,7 @@ inline void Mat::release()
     {
 #if 0 && defined(ANDROID)
         if (CV_ELEM_SIZE(type()) * size().width * size().height >=1000)
-            LOG_DEBUG_MSG("Mat::release: sizes = (" << size().width << "x" << size().height << "), type = " << type() << " = " << getNameOfCVType(type()) 
+            LOG_DEBUG_MSG("Mat::release: sizes = (" << size().width << "x" << size().height << "), type = " << type() << " = " << getNameOfCVType(type())
                     << ", SIZE = " << bytes_to_MB(CV_ELEM_SIZE(type()) * size().width * size().height) << " MB");
 #endif
         deallocate();
