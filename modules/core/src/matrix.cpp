@@ -50,7 +50,7 @@
 \****************************************************************************************/
 
 ////////////////// BEGIN TMP DEBUG CHANGES /////////////////
-#if 0 && defined(ANDROID)
+#if defined(DEBUG_MEMORY_CONSUMPTION_LOGDUMP) && defined(ANDROID)
 std::string getNameOfCVType(int type)
 {
     switch(type)
@@ -211,13 +211,13 @@ static void finalizeHdr(Mat& m)
 
 void Mat::create(int d, const int* _sizes, int _type)
 {
-#if 0 && defined(ANDROID)
+#if defined(DEBUG_MEMORY_CONSUMPTION_LOGDUMP) && defined(ANDROID)
     if (d == 1)
     {
         CV_Assert(_sizes[0] >= 0);
         if (CV_ELEM_SIZE(_type) * _sizes[0] >= 1000)
             LOG_DEBUG_MSG("Mat::create: d = " << d << ", sizes = (" << _sizes[0] << "), type = " << _type << " = " << getNameOfCVType(_type)
-                    << ", SIZE = " << bytes_to_MB(CV_ELEM_SIZE(_type) * _sizes[0]) << " MB");
+                    << ", SIZE = " << __bytes_to_MB(CV_ELEM_SIZE(_type) * _sizes[0]) << " MB");
     }
     else if (d == 2)
     {
@@ -225,7 +225,7 @@ void Mat::create(int d, const int* _sizes, int _type)
         CV_Assert(_sizes[1] >= 0);
         if (CV_ELEM_SIZE(_type) * _sizes[0] * _sizes[1] >= 1000)
             LOG_DEBUG_MSG("Mat::create: d = " << d << ", sizes = (" << _sizes[1] << ", " << _sizes[0] << "), type = " << _type << " = " << getNameOfCVType(_type)
-                    << ", SIZE = " << bytes_to_MB(CV_ELEM_SIZE(_type) * _sizes[0] * _sizes[1]) << " MB");
+                    << ", SIZE = " << __bytes_to_MB(CV_ELEM_SIZE(_type) * _sizes[0] * _sizes[1]) << " MB");
     }
     else
     {

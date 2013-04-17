@@ -110,9 +110,9 @@ inline void storeMemoryAllocation(int allocationSize)
     ::std::cout << "storeMemoryAllocation: allocated = " << allocationSize << ", now total=" << getTotalAllocatedSize() << ", max=" << getMaxTotalAllocatedSize() << std::endl;
     ::std::cout.flush();
 #endif
-#if 0 && defined(ANDROID)
+#if defined(DEBUG_MEMORY_CONSUMPTION_LOGDUMP) && defined(ANDROID)
     if (allocationSize >= 1000)
-        LOG_DEBUG_MSG("storeMemoryAllocation: allocated = " << allocationSize << ", now total=" << getTotalAllocatedSize() << ", max=" << getMaxTotalAllocatedSize());
+        LOG_DEBUG_MSG("storeMemoryAllocation: allocated = " << __bytes_to_MB(allocationSize) << " MB, now total=" << __bytes_to_MB(getTotalAllocatedSize()) << " MB, max=" << __bytes_to_MB(getMaxTotalAllocatedSize()) << " MB");
 #endif
 }
 inline void storeMemoryDeallocation(int allocationSize)
@@ -125,23 +125,42 @@ inline void storeMemoryDeallocation(int allocationSize)
     ::std::cout << "storeMemoryDeallocation: freed " << allocationSize << ", now total=" << getTotalAllocatedSize() << ", max=" << getMaxTotalAllocatedSize() << std::endl;
     ::std::cout.flush();
 #endif
-#if 0 && defined(ANDROID)
+#if defined(DEBUG_MEMORY_CONSUMPTION_LOGDUMP) && defined(ANDROID)
     if (allocationSize >= 1000)
-        LOG_DEBUG_MSG("storeMemoryDeallocation: deallocated = " << allocationSize << ", now total=" << getTotalAllocatedSize() << ", max=" << getMaxTotalAllocatedSize());
+        LOG_DEBUG_MSG("storeMemoryDeallocation: deallocated = " << __bytes_to_MB(allocationSize) << " MB, now total=" << __bytes_to_MB(getTotalAllocatedSize()) << " MB, max=" << __bytes_to_MB(getMaxTotalAllocatedSize()) << " MB");
 #endif
 
 }
 
+pthread_mutex_t* getMallocMutex()
+{
+    static pthread_mutex_t mutex;
+    static bool is_init = false;
+    if (!is_init)
+    {
+        pthread_mutex_init(&mutex, NULL);
+        is_init = true;
+    }
+
+    return &mutex;
+}
+
 void* fastMalloc( size_t size, int size_to_show )
 {
+    pthread_mutex_lock(getMallocMutex());
     uchar* udata = (uchar*)malloc(size + sizeof(void*) + CV_MALLOC_ALIGN + sizeof(int));
     if(!udata)
+    {
+        pthread_mutex_unlock(getMallocMutex());
         return OutOfMemoryError(size);
+    }
     uchar* udata_shifted = udata + sizeof(void*) + sizeof(int);
     uchar** adata = alignPtr( (uchar**)udata_shifted, CV_MALLOC_ALIGN);
     adata[-1] = udata;
     *(int*)udata = size_to_show + sizeof(void*) + CV_MALLOC_ALIGN + sizeof(int);
     storeMemoryAllocation(size_to_show);
+
+    pthread_mutex_unlock(getMallocMutex());
     return adata;
 }
 void* fastMalloc( size_t size )
@@ -153,12 +172,14 @@ void fastFree(void* ptr)
 {
     if(ptr)
     {
+        pthread_mutex_lock(getMallocMutex());
         uchar* udata = ((uchar**)ptr)[-1];
         CV_DbgAssert(udata < (uchar*)ptr &&
                ((uchar*)ptr - udata) <= (ptrdiff_t)(sizeof(void*)+CV_MALLOC_ALIGN + sizeof(int)));
         int size_to_show = *(int*)udata;
         storeMemoryDeallocation(size_to_show);
         free(udata);
+        pthread_mutex_unlock(getMallocMutex());
     }
 }
 

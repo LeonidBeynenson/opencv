@@ -44,7 +44,7 @@
 #define __OPENCV_CORE_MATRIX_OPERATIONS_HPP__
 
 ////////////////// BEGIN TMP DEBUG CHANGES /////////////////
-#if 0 && defined(ANDROID)
+#if defined(DEBUG_MEMORY_CONSUMPTION_LOGDUMP) && defined(ANDROID)
   #include <string>
   #include <iostream>
   #include <sstream>
@@ -57,8 +57,11 @@
        __android_log_print(ANDROID_LOG_DEBUG, "DEBUGMESG", "%s", _os.str().c_str()); \
     } while(0);
 #endif
+#ifndef GET_NAME_OF_CV_TYPE
 std::string getNameOfCVType(int type);
-inline double bytes_to_MB(int bytenum)
+#define GET_NAME_OF_CV_TYPE getNameOfCVType
+#endif
+inline double __bytes_to_MB(int bytenum)
 {
     return ceil(bytenum/1024.0/10.24)/100.0;
 }
@@ -387,10 +390,10 @@ inline void Mat::release()
 {
     if( refcount && CV_XADD(refcount, -1) == 1 )
     {
-#if 0 && defined(ANDROID)
+#if defined(DEBUG_MEMORY_CONSUMPTION_LOGDUMP) && defined(ANDROID)
         if (CV_ELEM_SIZE(type()) * size().width * size().height >=1000)
             LOG_DEBUG_MSG("Mat::release: sizes = (" << size().width << "x" << size().height << "), type = " << type() << " = " << getNameOfCVType(type())
-                    << ", SIZE = " << bytes_to_MB(CV_ELEM_SIZE(type()) * size().width * size().height) << " MB");
+                    << ", SIZE = " << __bytes_to_MB(CV_ELEM_SIZE(type()) * size().width * size().height) << " MB");
 #endif
         deallocate();
     }
