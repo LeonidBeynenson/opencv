@@ -914,6 +914,38 @@ void CameraHandler::setProperty(int propIdx, double value)
         }
     }
     break;
+    case ANDROID_CAMERA_PROPERTY_EXPOSE_LOCK:
+    {
+        if (is_supported(CameraParameters::KEY_AUTO_EXPOSURE_LOCK_SUPPORTED, "true"))
+        {
+            if (value != 0)
+                params.set(CameraParameters::KEY_AUTO_EXPOSURE_LOCK, "true");
+            else
+                params.set(CameraParameters::KEY_AUTO_EXPOSURE_LOCK, "false");
+            LOGE("Expose lock is set");
+        }
+        else
+        {
+            LOGE("Expose lock is not supported");
+        }
+    }
+    break;
+    case ANDROID_CAMERA_PROPERTY_WHITEBALANCE_LOCK:
+    {
+        if (is_supported(CameraParameters::KEY_AUTO_WHITEBALANCE_LOCK_SUPPORTED, "true"))
+        {
+            if (value != 0)
+                params.set(CameraParameters::KEY_AUTO_WHITEBALANCE_LOCK, "true");
+            else
+                params.set(CameraParameters::KEY_AUTO_WHITEBALANCE_LOCK, "false");
+            LOGE("White balance lock is set");
+        }
+        else
+        {
+            LOGE("White balance lock is not supported");
+        }
+    }
+    break;
     default:
         LOGW("CameraHandler::setProperty - Unsupported property.");
     };
